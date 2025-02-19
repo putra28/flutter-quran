@@ -105,11 +105,16 @@ class _HomePageState extends State<HomePage> {
                 itemCount: filteredSurahList.length,
                 itemBuilder: (context, index) {
                   var surah = filteredSurahList[index];
-                  return SuraItem(
-                    number: int.parse(surah['nomor']),
-                    title: surah['nama'],
-                    details: '${surah['ayat']} Ayat | ${surah['type']}',
-                    arabicTitle: surah['asma'],
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/surah', arguments: surah);
+                    },
+                    child: SuraItem(
+                      number: int.parse(surah['nomor']),
+                      title: surah['nama'],
+                      details: '${surah['ayat']} Ayat | ${surah['type']}',
+                      arabicTitle: surah['asma'],
+                    ),
                   );
                 },
               ),
