@@ -63,7 +63,7 @@ class _SurahPageState extends State<SurahPage> {
             SurahCard(title: 'Al-Baqarah', verse: 'Ayat 123', type: 'Madinah', arabicTitle: 'البقرة', arti: 'Sapi Betina'),
             SizedBox(height: 16),
             Center(
-              child: Image.asset('assets/images/bismillah.png', width: 250),
+              child: Image.asset('assets/images/bismillah.png', width: 450),
             ),
           ],
         ),
