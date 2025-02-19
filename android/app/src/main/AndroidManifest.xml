@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <application
-        android:label="flutter_quran"
+        android:label="Projek Al-Qur'an"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

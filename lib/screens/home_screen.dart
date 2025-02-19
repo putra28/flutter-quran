@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../widget/SurahNumber.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +21,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.background,
         elevation: 0,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
+          padding: const EdgeInsets.only(left: 10.0),
           child: IconButton(
             icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.primary),
             onPressed: () {},
@@ -35,7 +36,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -77,10 +78,10 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home, color: Color(0xFFD69E2E)), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark, color: Color(0xFFA0AEC0)), label: 'Bookmarks'),
-          BottomNavigationBarItem(icon: Icon(Icons.person, color: Color(0xFFA0AEC0)), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings, color: Color(0xFFA0AEC0)), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), label: 'Bookmarks'),
+          BottomNavigationBarItem(icon: Icon(Icons.person, color: Theme.of(context).colorScheme.secondary), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), label: 'Settings'),
         ],
       ),
     );
@@ -173,7 +174,7 @@ class FilterBar extends StatelessWidget {
       padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Color(0xFF795546),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,14 +186,14 @@ class FilterBar extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: selectedIndex == index ? Color(0xFFcb9d78) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: Text(
                     filters[index],
                     style: TextStyle(
+                      fontSize: 13,
                       color: Color(0xFFfffff4),
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -230,28 +231,19 @@ class SuraItem extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Color(0xFFFEEBC8),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  number.toString(),
-                  style: TextStyle(color: Color(0xFF3D3D3D)),
-                ),
-              ),
-              SizedBox(width: 8),
+              SurahNumberIcon(number: number),
+              SizedBox(width: 13),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(details, style: TextStyle(fontSize: 12)),
+                  Text(title, style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 7),
+                  Text(details, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.secondary)),
                 ],
               ),
             ],
           ),
-          Text(arabicTitle, style: TextStyle(color: Color(0xFF3D3D3D))),
+          Text(arabicTitle, style: GoogleFonts.scheherazadeNew(color: Theme.of(context).colorScheme.primary, fontSize: 22, fontWeight: FontWeight.bold)),
         ],
       ),
     );
