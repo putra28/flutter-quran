@@ -14,15 +14,15 @@ class QuranApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        fontFamily: GoogleFonts.nunito().fontFamily,
+        fontFamily: GoogleFonts.outfit().fontFamily,
         colorScheme: const ColorScheme(
           brightness: Brightness.light,
-          primary: Color(0xFF795546),
-          onPrimary: Color(0xFF795546),
+          primary: Color(0xFF564f47),
+          onPrimary: Color(0xFF564f47),
           secondary: Color(0xFF7C6844),
           onSecondary: Color(0xFF7C6844),
-          surface: Color(0xFFfdeddc),
-          onSurface: Color(0xFFfdeddc),
+          surface: Color(0xFFffecdc),
+          onSurface: Color(0xFFffecdc),
           error: Color(0xFF6C4E31),
           onError: Color(0xFF6C4E31),
           background: Color(0xFFFfFaf5),
