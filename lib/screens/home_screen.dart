@@ -13,19 +13,41 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  final List<String> filters = ["Surah", "Juz", "Mekah", "Madinah", "Rukuk"];
-  List<dynamic> surahList = [];
+  final List<String> filters = ["Surah", "Urutan", "Mekah", "Madinah", "Doa"];
+  List surahList = [];
+  List filteredSurahList = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSurahData();
+    loadSurahData();
   }
 
-  Future<void> _loadSurahData() async {
+  Future<void> loadSurahData() async {
     String data = await rootBundle.loadString('assets/json/surah.json');
+    List<dynamic> jsonResult = json.decode(data);
+
     setState(() {
-      surahList = json.decode(data);
+      surahList = jsonResult;
+      filteredSurahList = List.from(surahList); // Default tanpa filter
+    });
+  }
+
+  void applyFilter() {
+    setState(() {
+      if (selectedIndex == 1) {
+        // Urutan berdasarkan field "urut" (dikonversi ke integer)
+        filteredSurahList.sort((a, b) => int.parse(a['urut']).compareTo(int.parse(b['urut'])));
+      } else if (selectedIndex == 2) {
+        // Filter hanya "Mekah"
+        filteredSurahList = surahList.where((surah) => surah['type'] == 'Mekah').toList();
+      } else if (selectedIndex == 3) {
+        // Filter hanya "Madinah"
+        filteredSurahList = surahList.where((surah) => surah['type'] == 'Madinah').toList();
+      } else {
+        // Default tanpa filter (Surah)
+        filteredSurahList = List.from(surahList);
+      }
     });
   }
 
@@ -72,27 +94,26 @@ class _HomePageState extends State<HomePage> {
               onSelected: (index) {
                 setState(() {
                   selectedIndex = index;
+                  applyFilter();
                 });
               },
             ),
 
             SizedBox(height: 10),
             Expanded(
-              child: surahList.isEmpty
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: surahList.length,
-                      itemBuilder: (context, index) {
-                        var surah = surahList[index];
-                        return SuraItem(
-                          number: int.parse(surah['nomor']),
-                          title: surah['nama'],
-                          details: '${surah['ayat']} Ayat | ${surah['type']}',
-                          arabicTitle: surah['asma'],
-                        );
-                      },
-                    ),
-            )
+              child: ListView.builder(
+                itemCount: filteredSurahList.length,
+                itemBuilder: (context, index) {
+                  var surah = filteredSurahList[index];
+                  return SuraItem(
+                    number: int.parse(surah['nomor']),
+                    title: surah['nama'],
+                    details: '${surah['ayat']} Ayat | ${surah['type']}',
+                    arabicTitle: surah['asma'],
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
