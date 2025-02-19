@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widget/SurahNumber.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +13,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  final List<String> filters = ["Surah", "Juz", "Makkiyah", "Madaniyah", "Rukuk"];
+  final List<String> filters = ["Surah", "Juz", "Mekah", "Madinah", "Rukuk"];
+  List<dynamic> surahList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSurahData();
+  }
+
+  Future<void> _loadSurahData() async {
+    String data = await rootBundle.loadString('assets/json/surah.json');
+    setState(() {
+      surahList = json.decode(data);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +62,7 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 15),
 
-            LastReadCard(title: 'Al-Baqarah', verse: 'Ayat 123', type: 'Medinan', arabicTitle: 'البقرة'),
+            LastReadCard(title: 'Al-Baqarah', verse: 'Ayat 123', type: 'Madaniyah', arabicTitle: 'البقرة'),
 
             SizedBox(height: 16),
 
@@ -60,18 +76,23 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-            SizedBox(height: 16),
+            SizedBox(height: 10),
             Expanded(
-              child: ListView(
-                children: [
-                  SuraItem(number: 1, title: 'Al-Fatihah', details: '7 Verses | Meccan', arabicTitle: 'الفاتحة'),
-                  SuraItem(number: 2, title: 'Al-Baqarah', details: '286 Verses | Medinan', arabicTitle: 'البقرة'),
-                  SuraItem(number: 3, title: 'Aal-e-Imran', details: '200 Verses | Medinan', arabicTitle: 'آل عمران'),
-                  SuraItem(number: 4, title: 'An-Nisa\'', details: '176 Verses | Medinan', arabicTitle: 'النساء'),
-                  SuraItem(number: 5, title: 'Al-Ma\'idah', details: '120 Verses | Medinan', arabicTitle: 'المائدة'),
-                ],
-              ),
-            ),
+              child: surahList.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: surahList.length,
+                      itemBuilder: (context, index) {
+                        var surah = surahList[index];
+                        return SuraItem(
+                          number: int.parse(surah['nomor']),
+                          title: surah['nama'],
+                          details: '${surah['ayat']} Ayat | ${surah['type']}',
+                          arabicTitle: surah['asma'],
+                        );
+                      },
+                    ),
+            )
           ],
         ),
       ),
@@ -170,6 +191,7 @@ class FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     return Container(
       padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -192,7 +214,7 @@ class FilterBar extends StatelessWidget {
                   child: Text(
                     filters[index],
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: width * 0.033,
                       color: Color(0xFFfffff4),
                     ),
                   ),
