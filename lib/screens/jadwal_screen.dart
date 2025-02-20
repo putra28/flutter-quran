@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:flutter_quran/widget/JadwalCard_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_quran/widget/JadwalCard_widget.dart';
 
 class JadwalPage extends StatefulWidget {
   const JadwalPage({super.key});
@@ -15,36 +15,34 @@ class JadwalPage extends StatefulWidget {
 class _JadwalPageState extends State<JadwalPage> {
   Map<String, String>? jadwalHariIni;
   bool isLoading = true;
+  String? keteranganWaktu;
+  String? estimasi;
 
   @override
   void initState() {
     super.initState();
-    loadCachedJadwal();
-  }
-
-  Future<void> loadCachedJadwal() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? cachedData = prefs.getString('jadwal_sholat');
-    String? cachedDate = prefs.getString('jadwal_date');
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    if (cachedData != null && cachedDate == today) {
-      setState(() {
-        jadwalHariIni = Map<String, String>.from(json.decode(cachedData));
-        isLoading = false;
-      });
-    } else {
-      fetchJadwalSholat();
-    }
+    fetchJadwalSholat();
   }
 
   Future<void> fetchJadwalSholat() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     String tahun = DateFormat('yyyy').format(DateTime.now());
     String bulan = DateFormat('MM').format(DateTime.now());
     String tanggalHariIni = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    String url = 'https://raw.githubusercontent.com/lakuapik/jadwalsholatorg/master/adzan/bandung/$tahun/$bulan.json';
+    String? cachedData = prefs.getString('jadwal_sholat');
+    String? cachedDate = prefs.getString('tanggal_sholat');
 
+    if (cachedData != null && cachedDate == tanggalHariIni) {
+      setState(() {
+        jadwalHariIni = Map<String, String>.from(json.decode(cachedData));
+        isLoading = false;
+        updateKeteranganWaktu();
+      });
+      return;
+    }
+
+    String url = 'https://raw.githubusercontent.com/lakuapik/jadwalsholatorg/master/adzan/bandung/$tahun/$bulan.json';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -55,7 +53,7 @@ class _JadwalPageState extends State<JadwalPage> {
         );
 
         if (jadwal != null) {
-          Map<String, String> fetchedJadwal = {
+          jadwalHariIni = {
             'Imsak': jadwal['imsyak'],
             'Subuh': jadwal['shubuh'],
             'Terbit': jadwal['terbit'],
@@ -65,26 +63,73 @@ class _JadwalPageState extends State<JadwalPage> {
             'Maghrib': jadwal['magrib'],
             'Isya': jadwal['isya'],
           };
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('jadwal_sholat', json.encode(fetchedJadwal));
-          prefs.setString('jadwal_date', tanggalHariIni);
-
-          setState(() {
-            jadwalHariIni = fetchedJadwal;
-            isLoading = false;
-          });
-        } else {
-          setState(() {
-            isLoading = false;
-          });
+          print("Data JSON: ${response.body}");
+          prefs.setString('jadwal_sholat', json.encode(jadwalHariIni));
+          prefs.setString('tanggal_sholat', tanggalHariIni);
         }
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      print("Error fetching data: $e");
+    }
+
+    setState(() {
+      isLoading = false;
+      updateKeteranganWaktu();
+    });
+  }
+
+  // void updateKeteranganWaktu() {
+  //   if (jadwalHariIni == null) return;
+  //   DateTime now = DateTime.now();
+  //   List<String> waktuSholat = jadwalHariIni!.values.toList();
+  //   List<String> namaSholat = jadwalHariIni!.keys.toList();
+
+  //   for (int i = 0; i < waktuSholat.length; i++) {
+  //     DateTime waktu = DateFormat("HH:mm").parse(waktuSholat[i]);
+  //     DateTime waktuSholatDateTime = DateTime(now.year, now.month, now.day, waktu.hour, waktu.minute);
+
+  //     if (now.isBefore(waktuSholatDateTime)) {
+  //       if (waktuSholatDateTime.difference(now).inMinutes <= 30) {
+  //         keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
+  //         estimasi = "${waktuSholatDateTime.difference(now).inMinutes} Menit Lagi";
+  //       } else {
+  //         keteranganWaktu = "Waktu ${namaSholat[i - 1]}";
+  //         estimasi = "";
+  //       }
+  //       break;
+  //     }
+  //   }
+  // }
+
+  void updateKeteranganWaktu() {
+  if (jadwalHariIni == null || jadwalHariIni!.isEmpty) return;
+
+  DateTime now = DateTime.now();
+  List<String> waktuSholat = jadwalHariIni!.values.toList();
+  List<String> namaSholat = jadwalHariIni!.keys.toList();
+
+  for (int i = 0; i < waktuSholat.length; i++) {
+    DateTime waktu = DateFormat("HH:mm").parse(waktuSholat[i]);
+    DateTime waktuSholatDateTime = DateTime(now.year, now.month, now.day, waktu.hour, waktu.minute);
+
+    if (now.isBefore(waktuSholatDateTime)) {
+      if (waktuSholatDateTime.difference(now).inMinutes <= 30) {
+        keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
+        estimasi = "${waktuSholatDateTime.difference(now).inMinutes} Menit Lagi";
+      } else {
+        keteranganWaktu = i > 0 ? "Waktu ${namaSholat[i - 1]}" : "Menunggu Waktu ${namaSholat[i]}";
+        estimasi = i > 0 ? "" : "Menunggu waktu sholat berikutnya";
+      }
+      break;
     }
   }
+
+  // Jika sekarang sudah melewati semua jadwal sholat
+  if (keteranganWaktu == null) {
+    keteranganWaktu = "Waktu ${namaSholat.last}";
+    estimasi = "";
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +176,7 @@ class _JadwalPageState extends State<JadwalPage> {
               ],
             ),
             SizedBox(height: 15),
-            JadwalCard(keterangan: 'Mendekati Waktu Ashar', estimasi: '23 Menit Lagi', lokasi: 'Bandung'),
+            JadwalCard(keterangan: keteranganWaktu ?? "cb", estimasi: estimasi ?? "cb", lokasi: 'Bandung'),
             SizedBox(height: 15),
             Expanded(
               child: isLoading

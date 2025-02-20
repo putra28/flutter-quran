@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 class JadwalItem extends StatelessWidget {
   final String title;
-  final String number;
+  final String time;
 
-  const JadwalItem({required this.title, required this.number, Key? key})
-    : super(key: key);
+  JadwalItem({required this.title, required this.time});
 
   @override
   Widget build(BuildContext context) {
@@ -17,23 +16,13 @@ class JadwalItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              SizedBox(width: 13),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          Text(
+            title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+          ),
+          Text(
+            time,
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
           ),
         ],
       ),
