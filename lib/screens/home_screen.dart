@@ -216,12 +216,40 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), label: 'Bookmarks'),
-          BottomNavigationBarItem(icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.secondary), label: 'Jadwal Adzan'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), label: 'Settings'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary), 
+            label: 'Home'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), 
+            label: 'Bookmarks'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.secondary), 
+            label: 'Jadwal Adzan'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), 
+            label: 'Settings'
+          ),
         ],
-      ),
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/bookmarks');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/jadwal');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/settings');
+              break;
+          }
+        },
+      )
     );
   }
 }

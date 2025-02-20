@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/surah_screen.dart';
+import 'screens/jadwal_screen.dart';
 
 void main() {
   runApp(const QuranApp());
@@ -34,6 +35,7 @@ class QuranApp extends StatelessWidget {
       routes: {
         '/home': (context) => const HomePage(),
         '/surah': (context) => const SurahPage(),
+        '/jadwal': (context) => const JadwalPage(),
       },
     );
   }
