@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), label: 'Bookmarks'),
-          BottomNavigationBarItem(icon: Icon(Icons.person, color: Theme.of(context).colorScheme.secondary), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.secondary), label: 'Jadwal Adzan'),
           BottomNavigationBarItem(icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), label: 'Settings'),
         ],
       ),

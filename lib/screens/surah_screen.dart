@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:html_unescape/html_unescape.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_quran/widget/SurahCard_widget.dart';
+import 'package:flutter_quran/widget/AyatItem_widget.dart';
 
 class SurahPage extends StatefulWidget {
   const SurahPage({super.key});
@@ -73,15 +75,6 @@ class _SurahPageState extends State<SurahPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.search,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
@@ -108,6 +101,7 @@ class _SurahPageState extends State<SurahPage> {
                   } else {
                     var ayat = ayatList[index - 1];
                     return AyatItem(
+                      title: surahData?['nama'],
                       number: int.tryParse(ayat['nomor']) ?? 0,
                       arabicText: ayat['ar'],
                       translation: ayat['id'],
@@ -124,199 +118,3 @@ class _SurahPageState extends State<SurahPage> {
   }
 }
 
-class AyatItem extends StatelessWidget {
-  final int number;
-  final String arabicText;
-  final String translation;
-  final String latin;
-
-  String decodeHtml(String text) {
-    final unescape = HtmlUnescape();
-    return unescape.convert(text);
-  }
-
-  String convertToArabicNumeral(int number) {
-    // Peta angka Latin (0-9) ke angka Arabic-Indic
-    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-
-    // Ubah setiap digit angka menjadi angka Arab
-    return number.toString().split('').map((digit) => arabicNumerals[int.parse(digit)]).join('');
-  }
-
-  const AyatItem({
-    required this.number,
-    required this.arabicText,
-    required this.translation,
-    required this.latin,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/ayatNumber.png',
-                    width: 40,
-                    height: 40,
-                  ),
-                  Text(
-                    convertToArabicNumeral(number), //ayat Number
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  arabicText,
-                  textAlign: TextAlign.right,
-                  style: GoogleFonts.scheherazadeNew(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 5),
-          // Html(
-          //   data: latin,
-          //   style: {
-          //     "strong": Style(
-          //       fontSize: FontSize(15),
-          //       fontWeight: FontWeight.bold,
-          //       color: Theme.of(context).colorScheme.secondary,
-          //     ),
-          //     "u": Style(
-          //       fontSize: FontSize(15),
-          //       fontWeight: FontWeight.bold,
-          //       textDecoration: TextDecoration.underline,
-          //       color: Theme.of(context).colorScheme.secondary,
-          //     ),
-          //     "body": Style(
-          //       fontSize: FontSize(15),
-          //       fontWeight: FontWeight.bold,
-          //       padding: HtmlPaddings.zero,
-          //     ),
-          //   },
-          // ),
-          Text(
-            translation,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary,),
-          ),
-          Divider(color: Colors.grey.shade300),
-        ],
-      ),
-    );
-  }
-}
-
-class SurahCard extends StatelessWidget {
-  final String title;
-  final String verse;
-  final String type;
-  final String arabicTitle;
-  final String arti;
-  final String nomor;
-
-  const SurahCard({
-    required this.title,
-    required this.verse,
-    required this.type,
-    required this.arabicTitle,
-    required this.arti,
-    required this.nomor,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                arti,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 15),
-              Text(
-                verse + ' Ayat',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                type,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "Surah ke-"+nomor,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            arabicTitle,
-            style: GoogleFonts.scheherazadeNew(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
