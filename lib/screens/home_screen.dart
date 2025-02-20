@@ -15,12 +15,14 @@ class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
   final List<String> filters = ["Surah", "Urutan", "Mekah", "Madinah", "Doa"];
   List surahList = [];
+  List doaList = [];
   List filteredSurahList = [];
 
   @override
   void initState() {
     super.initState();
     loadSurahData();
+    loadDoaData();
   }
 
   Future<void> loadSurahData() async {
@@ -30,6 +32,15 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       surahList = jsonResult;
       filteredSurahList = List.from(surahList); // Default tanpa filter
+    });
+  }
+
+  Future<void> loadDoaData() async {
+    String data = await rootBundle.loadString('assets/json/doa.json');
+    List<dynamic> doajsonResult = json.decode(data);
+
+    setState(() {
+      doaList = doajsonResult;
     });
   }
 
@@ -44,6 +55,9 @@ class _HomePageState extends State<HomePage> {
       } else if (selectedIndex == 3) {
         // Filter hanya "Madinah"
         filteredSurahList = surahList.where((surah) => surah['type'] == 'Madinah').toList();
+      } else if (selectedIndex == 4) {
+      // Default tanpa filter (doa)
+        filteredSurahList = List.from(doaList);
       } else {
         // Default tanpa filter (Surah)
         filteredSurahList = List.from(surahList);
@@ -104,17 +118,27 @@ class _HomePageState extends State<HomePage> {
               child: ListView.builder(
                 itemCount: filteredSurahList.length,
                 itemBuilder: (context, index) {
-                  var surah = filteredSurahList[index];
+                  var item = filteredSurahList[index];
                   return GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/surah', arguments: surah);
+                      if (selectedIndex == 4) {
+                        // Tampilkan halaman khusus doa jika dibutuhkan
+                        Navigator.pushNamed(context, '/doa', arguments: item['id']);
+                      } else {
+                        Navigator.pushNamed(context, '/surah', arguments: int.parse(item['nomor']));
+                      }
                     },
-                    child: SuraItem(
-                      number: int.parse(surah['nomor']),
-                      title: surah['nama'],
-                      details: '${surah['ayat']} Ayat | ${surah['type']}',
-                      arabicTitle: surah['asma'],
-                    ),
+                    child: selectedIndex == 4
+                      ? DoaItem(
+                          number: index + 1,
+                          title: item['doa'],
+                        )
+                      : SuraItem(
+                          number: index + 1,
+                          title: item['nama'],
+                          details: '${item['ayat']} Ayat | ${item['type']} | Surah ke-${int.parse(item['nomor'])}',
+                          arabicTitle: item['asma'],
+                        ),
                   );
                 },
               ),
@@ -292,6 +316,43 @@ class SuraItem extends StatelessWidget {
             ],
           ),
           Text(arabicTitle, style: GoogleFonts.scheherazadeNew(color: Theme.of(context).colorScheme.primary, fontSize: 22, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+class DoaItem extends StatelessWidget {
+  final int number;
+  final String title;
+
+  const DoaItem({
+    required this.number,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              SurahNumberIcon(number: number),
+              SizedBox(width: 13),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     );
