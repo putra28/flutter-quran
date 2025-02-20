@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widget/SurahNumber.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_quran/widget/LastReadCard_widget.dart';
+import 'package:flutter_quran/widget/FilterBar_widget.dart';
+import 'package:flutter_quran/widget/SuraItem_widget.dart';
+import 'package:flutter_quran/widget/DoaItem_widget.dart';
+import 'package:flutter_quran/widget/DoaModal_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,6 +15,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
+  List searchResults = [];
+  String selectedFilter = "Surah"; // Untuk menentukan apakah Surah atau Doa yang aktif
   int selectedIndex = 0;
   final List<String> filters = ["Surah", "Urutan", "Mekah", "Madinah", "Doa"];
   List surahList = [];
@@ -23,6 +30,23 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     loadSurahData();
     loadDoaData();
+  }
+
+  void searchData(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        searchResults.clear();
+      } else {
+        searchResults = surahList
+            .where((surah) => surah['nama'].toLowerCase().contains(query.toLowerCase()) ||
+                              surah['arti'].toLowerCase().contains(query.toLowerCase()))
+            .toList();
+
+        searchResults.addAll(doaList
+            .where((doa) => doa['doa'].toLowerCase().contains(query.toLowerCase()))
+            .toList());
+      }
+    });
   }
 
   Future<void> loadSurahData() async {
@@ -65,6 +89,24 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void showDoaBottomSheet(BuildContext context, Map<String, dynamic> doa) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DoaBottomSheet(
+          title: doa['doa'],
+          arabicText: doa['ayat'],
+          latinText: doa['latin'],
+          translation: doa['artinya'],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,19 +114,43 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.background,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 10.0),
-          child: IconButton(
-            icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.primary),
-            onPressed: () {},
-          ),
-        ),
-        title: Text('Al Quran', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700)),
+        title: isSearching
+            ? Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: TextField(
+                  controller: searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: "Cari Surah atau Doa...",
+                    border: InputBorder.none,
+                  ),
+                  onChanged: searchData,
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Text("Al-Qur'an & Doa", style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700),),
+              ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
-            onPressed: () {},
-          ),
+          isSearching
+              ? IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = false;
+                      searchController.clear();
+                      searchResults.clear();
+                    });
+                  },
+                )
+              : IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = true;
+                    });
+                  },
+                ),
         ],
       ),
       body: Padding(
@@ -116,29 +182,30 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredSurahList.length,
+                itemCount: searchResults.isNotEmpty ? searchResults.length : filteredSurahList.length,
                 itemBuilder: (context, index) {
-                  var item = filteredSurahList[index];
+                  var item = searchResults.isNotEmpty ? searchResults[index] : filteredSurahList[index];
+
                   return GestureDetector(
                     onTap: () {
-                      if (selectedIndex == 4) {
-                        // Tampilkan halaman khusus doa jika dibutuhkan
-                        Navigator.pushNamed(context, '/doa', arguments: item['id']);
+                      if (item.containsKey('doa')) {
+                        // Navigator.pushNamed(context, '/doa', arguments: item['id']);
+                        showDoaBottomSheet(context, item);
                       } else {
                         Navigator.pushNamed(context, '/surah', arguments: int.parse(item['nomor']));
                       }
                     },
-                    child: selectedIndex == 4
-                      ? DoaItem(
-                          number: index + 1,
-                          title: item['doa'],
-                        )
-                      : SuraItem(
-                          number: index + 1,
-                          title: item['nama'],
-                          details: '${item['ayat']} Ayat | ${item['type']} | Surah ke-${int.parse(item['nomor'])}',
-                          arabicTitle: item['asma'],
-                        ),
+                    child: item.containsKey('doa')
+                        ? DoaItem(
+                            number: index + 1,
+                            title: item['doa'],
+                          )
+                        : SuraItem(
+                            number: index + 1,
+                            title: item['nama'],
+                            details: '${item['ayat']} Ayat | ${item['type']} | Surah ke-${int.parse(item['nomor'])}',
+                            arabicTitle: item['asma'],
+                          ),
                   );
                 },
               ),
@@ -153,206 +220,6 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), label: 'Bookmarks'),
           BottomNavigationBarItem(icon: Icon(Icons.person, color: Theme.of(context).colorScheme.secondary), label: 'Profile'),
           BottomNavigationBarItem(icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), label: 'Settings'),
-        ],
-      ),
-    );
-  }
-}
-
-class LastReadCard extends StatelessWidget {
-  final String title;
-  final String verse;
-  final String type;
-  final String arabicTitle;
-
-  const LastReadCard({
-    required this.title,
-    required this.verse,
-    required this.type,
-    required this.arabicTitle,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                verse + ' | ' + type,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            arabicTitle,
-            style: GoogleFonts.scheherazadeNew(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FilterBar extends StatelessWidget {
-  final List<String> filters;
-  final int selectedIndex;
-  final Function(int) onSelected;
-
-  const FilterBar({
-    Key? key,
-    required this.filters,
-    required this.selectedIndex,
-    required this.onSelected,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    return Container(
-      padding: EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Color(0xFF795546),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(filters.length, (index) {
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onSelected(index),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: selectedIndex == index ? Color(0xFFcb9d78) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text(
-                    filters[index],
-                    style: TextStyle(
-                      fontSize: width * 0.033,
-                      color: Color(0xFFfffff4),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-class SuraItem extends StatelessWidget {
-  final int number;
-  final String title;
-  final String details;
-  final String arabicTitle;
-
-  const SuraItem({
-    required this.number,
-    required this.title,
-    required this.details,
-    required this.arabicTitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              SurahNumberIcon(number: number),
-              SizedBox(width: 13),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 7),
-                  Text(details, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.secondary)),
-                ],
-              ),
-            ],
-          ),
-          Text(arabicTitle, style: GoogleFonts.scheherazadeNew(color: Theme.of(context).colorScheme.primary, fontSize: 22, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-}
-
-class DoaItem extends StatelessWidget {
-  final int number;
-  final String title;
-
-  const DoaItem({
-    required this.number,
-    required this.title,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              SurahNumberIcon(number: number),
-              SizedBox(width: 13),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
-          ),
         ],
       ),
     );
