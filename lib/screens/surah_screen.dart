@@ -11,24 +11,25 @@ class SurahPage extends StatefulWidget {
 }
 
 class _SurahPageState extends State<SurahPage> {
-  int selectedIndex = 0;
-  List surahList = [];
-  List filteredSurahList = [];
+  Map<String, dynamic>? surahData;
+  List<dynamic> ayatList = [];
 
   @override
   void initState() {
     super.initState();
-    loadSurahData();
+    loadAyatData();
   }
 
-  Future<void> loadSurahData() async {
-    String data = await rootBundle.loadString('assets/json/surah.json');
+  Future<void> loadAyatData() async {
+    String data = await rootBundle.loadString('assets/json/contoh.json'); // Sesuaikan path JSON
     List<dynamic> jsonResult = json.decode(data);
 
-    setState(() {
-      surahList = jsonResult;
-      filteredSurahList = List.from(surahList);
-    });
+    if (jsonResult.isNotEmpty) {
+      setState(() {
+        surahData = jsonResult[0]; // Mengambil data surah pertama
+        ayatList = surahData?['isi'] ?? []; // Mengambil daftar ayat
+      });
+    }
   }
 
   @override
@@ -47,7 +48,13 @@ class _SurahPageState extends State<SurahPage> {
             },
           ),
         ),
-        title: Text('Al Fatihah', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700)),
+        title: Text(
+          surahData?['nama'] ?? 'Loading...',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
@@ -60,10 +67,30 @@ class _SurahPageState extends State<SurahPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SurahCard(title: 'Al-Baqarah', verse: 'Ayat 123', type: 'Madinah', arabicTitle: 'البقرة', arti: 'Sapi Betina'),
+            SurahCard(
+              title: surahData?['nama'] ?? 'Loading...',
+              verse: surahData?['ayat'].toString() ?? '0',
+              type: surahData?['type'] ?? '',
+              arabicTitle: surahData?['asma'] ?? '',
+              arti: surahData?['arti'] ?? '',
+            ),
             SizedBox(height: 16),
             Center(
-              child: Image.asset('assets/images/bismillah.png', width: 450),
+              child: Image.asset('assets/images/bismillah.png', width: 250),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: ayatList.length,
+                itemBuilder: (context, index) {
+                  var ayat = ayatList[index];
+                  return AyatItem(
+                    number: int.tryParse(ayat['nomor']) ?? 0,
+                    arabicText: ayat['ar'],
+                    translation: ayat['id'],
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -71,6 +98,57 @@ class _SurahPageState extends State<SurahPage> {
     );
   }
 }
+
+class AyatItem extends StatelessWidget {
+  final int number;
+  final String arabicText;
+  final String translation;
+
+  const AyatItem({
+    required this.number,
+    required this.arabicText,
+    required this.translation,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: Colors.brown[200],
+                child: Text(number.toString(), style: TextStyle(color: Colors.white)),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  arabicText,
+                  textAlign: TextAlign.right,
+                  style: GoogleFonts.scheherazadeNew(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 5),
+          Text(
+            translation,
+            style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+          ),
+          Divider(color: Colors.grey.shade300),
+        ],
+      ),
+    );
+  }
+}
+
 
 class SurahCard extends StatelessWidget {
   final String title;
