@@ -3,6 +3,10 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-feature android:name="android.hardware.sensor.compass"/>
+
     <application
         android:label="Projek Al-Qur'an"
         android:name="${applicationName}"

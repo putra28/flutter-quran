@@ -102,8 +102,15 @@ class _JadwalPageState extends State<JadwalPage> {
         int selisihMenit = waktuSholatDateTime.difference(now).inMinutes;
         int selisihJam = selisihMenit ~/ 60;
         int sisaMenit = selisihMenit % 60;
-
-        keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
+        
+        if (waktuSholatDateTime.difference(now).inMinutes <= 30) {
+          keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
+        } else {
+          keteranganWaktu =
+              i > 0
+                  ? "Waktu ${namaSholat[i - 1]}"
+                  : "Menunggu Waktu ${namaSholat[i]}";
+        }
         estimasi = selisihJam > 0
             ? "$selisihJam Jam $sisaMenit Menit menuju ${namaSholat[i]}"
             : "$selisihMenit Menit menuju ${namaSholat[i]}";
