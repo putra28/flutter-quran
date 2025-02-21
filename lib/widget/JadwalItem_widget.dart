@@ -18,11 +18,18 @@ class JadwalItem extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           Text(
             time,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
         ],
       ),

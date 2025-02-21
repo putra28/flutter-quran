@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:html_unescape/html_unescape.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_quran/widget/SurahCard_widget.dart';
 import 'package:flutter_quran/widget/AyatItem_widget.dart';
 

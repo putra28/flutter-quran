@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_quran/widget/JadwalCard_widget.dart';
+import 'package:flutter_quran/widget/JadwalItem_widget.dart';
+import 'package:hijri/hijri_calendar.dart';
 
 class JadwalPage extends StatefulWidget {
   const JadwalPage({super.key});
@@ -17,6 +19,7 @@ class _JadwalPageState extends State<JadwalPage> {
   bool isLoading = true;
   String? keteranganWaktu;
   String? estimasi;
+  var _format = HijriCalendar.now();
 
   @override
   void initState() {
@@ -42,7 +45,8 @@ class _JadwalPageState extends State<JadwalPage> {
       return;
     }
 
-    String url = 'https://raw.githubusercontent.com/lakuapik/jadwalsholatorg/master/adzan/bandung/$tahun/$bulan.json';
+    String url =
+        'https://raw.githubusercontent.com/lakuapik/jadwalsholatorg/master/adzan/bandung/$tahun/$bulan.json';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -63,7 +67,6 @@ class _JadwalPageState extends State<JadwalPage> {
             'Maghrib': jadwal['magrib'],
             'Isya': jadwal['isya'],
           };
-          print("Data JSON: ${response.body}");
           prefs.setString('jadwal_sholat', json.encode(jadwalHariIni));
           prefs.setString('tanggal_sholat', tanggalHariIni);
         }
@@ -78,58 +81,43 @@ class _JadwalPageState extends State<JadwalPage> {
     });
   }
 
-  // void updateKeteranganWaktu() {
-  //   if (jadwalHariIni == null) return;
-  //   DateTime now = DateTime.now();
-  //   List<String> waktuSholat = jadwalHariIni!.values.toList();
-  //   List<String> namaSholat = jadwalHariIni!.keys.toList();
-
-  //   for (int i = 0; i < waktuSholat.length; i++) {
-  //     DateTime waktu = DateFormat("HH:mm").parse(waktuSholat[i]);
-  //     DateTime waktuSholatDateTime = DateTime(now.year, now.month, now.day, waktu.hour, waktu.minute);
-
-  //     if (now.isBefore(waktuSholatDateTime)) {
-  //       if (waktuSholatDateTime.difference(now).inMinutes <= 30) {
-  //         keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
-  //         estimasi = "${waktuSholatDateTime.difference(now).inMinutes} Menit Lagi";
-  //       } else {
-  //         keteranganWaktu = "Waktu ${namaSholat[i - 1]}";
-  //         estimasi = "";
-  //       }
-  //       break;
-  //     }
-  //   }
-  // }
-
   void updateKeteranganWaktu() {
-  if (jadwalHariIni == null || jadwalHariIni!.isEmpty) return;
+    if (jadwalHariIni == null || jadwalHariIni!.isEmpty) return;
 
-  DateTime now = DateTime.now();
-  List<String> waktuSholat = jadwalHariIni!.values.toList();
-  List<String> namaSholat = jadwalHariIni!.keys.toList();
+    DateTime now = DateTime.now();
+    List<String> waktuSholat = jadwalHariIni!.values.toList();
+    List<String> namaSholat = jadwalHariIni!.keys.toList();
 
-  for (int i = 0; i < waktuSholat.length; i++) {
-    DateTime waktu = DateFormat("HH:mm").parse(waktuSholat[i]);
-    DateTime waktuSholatDateTime = DateTime(now.year, now.month, now.day, waktu.hour, waktu.minute);
+    for (int i = 0; i < waktuSholat.length; i++) {
+      DateTime waktu = DateFormat("HH:mm").parse(waktuSholat[i]);
+      DateTime waktuSholatDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        waktu.hour,
+        waktu.minute,
+      );
 
-    if (now.isBefore(waktuSholatDateTime)) {
-      if (waktuSholatDateTime.difference(now).inMinutes <= 30) {
+      if (now.isBefore(waktuSholatDateTime)) {
+        int selisihMenit = waktuSholatDateTime.difference(now).inMinutes;
+        int selisihJam = selisihMenit ~/ 60;
+        int sisaMenit = selisihMenit % 60;
+
         keteranganWaktu = "Menjelang Waktu ${namaSholat[i]}";
-        estimasi = "${waktuSholatDateTime.difference(now).inMinutes} Menit Lagi";
-      } else {
-        keteranganWaktu = i > 0 ? "Waktu ${namaSholat[i - 1]}" : "Menunggu Waktu ${namaSholat[i]}";
-        estimasi = i > 0 ? "" : "Menunggu waktu sholat berikutnya";
+        estimasi = selisihJam > 0
+            ? "$selisihJam Jam $sisaMenit Menit menuju ${namaSholat[i]}"
+            : "$selisihMenit Menit menuju ${namaSholat[i]}";
+        return;
       }
-      break;
+    }
+
+    // Jika sekarang sudah melewati semua jadwal sholat
+    if (keteranganWaktu == null) {
+      keteranganWaktu = "Waktu ${namaSholat.last}";
+      estimasi = "";
     }
   }
 
-  // Jika sekarang sudah melewati semua jadwal sholat
-  if (keteranganWaktu == null) {
-    keteranganWaktu = "Waktu ${namaSholat.last}";
-    estimasi = "";
-  }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -166,31 +154,42 @@ class _JadwalPageState extends State<JadwalPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '21 Sya`ban 1446H',
-                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary),
+                  '${_format.toFormat("dd MMMM yyyy")}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
                 Text(
-                  '20 Februari 2025',
-                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary),
+                  DateFormat('dd MMMM yyyy').format(DateTime.now()),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 15),
-            JadwalCard(keterangan: keteranganWaktu ?? "cb", estimasi: estimasi ?? "cb", lokasi: 'Bandung'),
+            JadwalCard(
+              keterangan: keteranganWaktu ?? "cb",
+              estimasi: estimasi ?? "cb",
+              lokasi: 'Bandung',
+            ),
             SizedBox(height: 15),
             Expanded(
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: jadwalHariIni?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        String key = jadwalHariIni!.keys.elementAt(index);
-                        return JadwalItem(
-                          title: key,
-                          time: jadwalHariIni![key]!,
-                        );
-                      },
-                    ),
+              child:
+                  isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                        itemCount: jadwalHariIni?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          String key = jadwalHariIni!.keys.elementAt(index);
+                          return JadwalItem(
+                            title: key,
+                            time: jadwalHariIni![key]!,
+                          );
+                        },
+                      ),
             ),
           ],
         ),
@@ -199,20 +198,32 @@ class _JadwalPageState extends State<JadwalPage> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Home'
+            icon: Icon(
+              Icons.home,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Bookmarks'
+            icon: Icon(
+              Icons.bookmark,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            label: 'Bookmarks',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.primary), 
-            label: 'Jadwal Adzan'
+            icon: Icon(
+              Icons.schedule,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            label: 'Jadwal Adzan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Settings'
+            icon: Icon(
+              Icons.settings,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            label: 'Settings',
           ),
         ],
         onTap: (index) {
@@ -231,37 +242,8 @@ class _JadwalPageState extends State<JadwalPage> {
               break;
           }
         },
-      )
-    );
-  }
-}
-
-class JadwalItem extends StatelessWidget {
-  final String title;
-  final String time;
-
-  JadwalItem({required this.title, required this.time});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
-          ),
-          Text(
-            time,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
-          ),
-        ],
       ),
     );
   }
 }
+
