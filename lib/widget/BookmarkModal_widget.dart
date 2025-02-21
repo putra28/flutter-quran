@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class BookmarkModalWidget extends StatelessWidget {
   final String title;
   final String ayat;
-  final VoidCallback onSave; // Tambahkan callback
+  final VoidCallback onSave; 
   
   const BookmarkModalWidget({
     Key? key,
@@ -15,7 +16,7 @@ class BookmarkModalWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.2, // 30% dari layar
+      height: MediaQuery.of(context).size.height * 0.3, 
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -35,12 +36,48 @@ class BookmarkModalWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "Simpan ke Terakhir Baca?",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Surah: ',
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    TextSpan(
+                      text: title,
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 5),
+              
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Ayat ke-',
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    TextSpan(
+                      text: ayat,
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Simpan ke Terakhir Baca?",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Row(

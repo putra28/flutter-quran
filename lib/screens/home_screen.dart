@@ -6,6 +6,7 @@ import 'package:flutter_quran/widget/FilterBar_widget.dart';
 import 'package:flutter_quran/widget/SuraItem_widget.dart';
 import 'package:flutter_quran/widget/DoaItem_widget.dart';
 import 'package:flutter_quran/widget/DoaModal_widget.dart';
+import 'package:flutter_quran/widget/Settings_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,24 +20,19 @@ class _HomePageState extends State<HomePage> {
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
   List searchResults = [];
-  String selectedFilter = "Surah"; // Untuk menentukan apakah Surah atau Doa yang aktif
+  String selectedFilter =
+      "Surah"; // Untuk menentukan apakah Surah atau Doa yang aktif
   int selectedIndex = 0;
   final List<String> filters = ["Surah", "Urutan", "Mekah", "Madinah", "Doa"];
   List surahList = [];
   List doaList = [];
   List filteredSurahList = [];
-  // List<String?> lastRead = [null, null, null, null];
 
   @override
   void initState() {
     super.initState();
     loadSurahData();
     loadDoaData();
-    // getLastRead().then((value) {
-    //   setState(() {
-    //     lastRead = value;
-    //   });
-    // });
   }
 
   Future<List<String?>> getLastRead() async {
@@ -46,7 +42,12 @@ class _HomePageState extends State<HomePage> {
     String? surahArabic = prefs.getString('lastReadSurahArabic');
     String? surahType = prefs.getString('lastReadSurahType');
     int? ayat = prefs.getInt('lastReadAyat');
-    return [surah, surahArabic, surahType, ayat != null ? ayat.toString() : null];
+    return [
+      surah,
+      surahArabic,
+      surahType,
+      ayat != null ? ayat.toString() : null,
+    ];
   }
 
   void searchData(String query) {
@@ -54,14 +55,24 @@ class _HomePageState extends State<HomePage> {
       if (query.isEmpty) {
         searchResults.clear();
       } else {
-        searchResults = surahList
-            .where((surah) => surah['nama'].toLowerCase().contains(query.toLowerCase()) ||
-                              surah['arti'].toLowerCase().contains(query.toLowerCase()))
-            .toList();
+        searchResults =
+            surahList
+                .where(
+                  (surah) =>
+                      surah['nama'].toLowerCase().contains(
+                        query.toLowerCase(),
+                      ) ||
+                      surah['arti'].toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
 
-        searchResults.addAll(doaList
-            .where((doa) => doa['doa'].toLowerCase().contains(query.toLowerCase()))
-            .toList());
+        searchResults.addAll(
+          doaList
+              .where(
+                (doa) => doa['doa'].toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList(),
+        );
       }
     });
   }
@@ -89,15 +100,19 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       if (selectedIndex == 1) {
         // Urutan berdasarkan field "urut" (dikonversi ke integer)
-        filteredSurahList.sort((a, b) => int.parse(a['urut']).compareTo(int.parse(b['urut'])));
+        filteredSurahList.sort(
+          (a, b) => int.parse(a['urut']).compareTo(int.parse(b['urut'])),
+        );
       } else if (selectedIndex == 2) {
         // Filter hanya "Mekah"
-        filteredSurahList = surahList.where((surah) => surah['type'] == 'Mekah').toList();
+        filteredSurahList =
+            surahList.where((surah) => surah['type'] == 'Mekah').toList();
       } else if (selectedIndex == 3) {
         // Filter hanya "Madinah"
-        filteredSurahList = surahList.where((surah) => surah['type'] == 'Madinah').toList();
+        filteredSurahList =
+            surahList.where((surah) => surah['type'] == 'Madinah').toList();
       } else if (selectedIndex == 4) {
-      // Default tanpa filter (doa)
+        // Default tanpa filter (doa)
         filteredSurahList = List.from(doaList);
       } else {
         // Default tanpa filter (Surah)
@@ -124,6 +139,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void showSettingBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SettingsWidget();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,43 +159,50 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.background,
         elevation: 0,
-        title: isSearching
-            ? Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: TextField(
-                  controller: searchController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: "Cari Surah atau Doa...",
-                    border: InputBorder.none,
+        title:
+            isSearching
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: TextField(
+                    controller: searchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: "Cari Surah atau Doa...",
+                      border: InputBorder.none,
+                    ),
+                    onChanged: searchData,
                   ),
-                  onChanged: searchData,
+                )
+                : Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Text(
+                    "Al-Qur'an & Doa",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-              )
-            : Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: Text("Al-Qur'an & Doa", style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700),),
-              ),
         actions: [
           isSearching
               ? IconButton(
-                  icon: Icon(Icons.close),
-                  onPressed: () {
-                    setState(() {
-                      isSearching = false;
-                      searchController.clear();
-                      searchResults.clear();
-                    });
-                  },
-                )
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    isSearching = false;
+                    searchController.clear();
+                    searchResults.clear();
+                  });
+                },
+              )
               : IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    setState(() {
-                      isSearching = true;
-                    });
-                  },
-                ),
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  setState(() {
+                    isSearching = true;
+                  });
+                },
+              ),
         ],
       ),
       body: Padding(
@@ -177,36 +212,59 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               'Last Read',
-              style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             SizedBox(height: 15),
-            
+
             FutureBuilder<List<String?>>(
-            future: getLastRead(), // Setiap rebuild, ambil data terbaru dari SharedPreferences
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // Loading indikator
-              }
-              if (!snapshot.hasData || snapshot.data![0] == null) {
-                return Text("Belum ada bacaan terakhir");
-              }
+              future:
+                  getLastRead(), // Ambil data terbaru dari SharedPreferences
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator(); // Loading indikator
+                }
+                if (!snapshot.hasData || snapshot.data![0] == null) {
+                  return Text("Belum ada bacaan terakhir");
+                }
 
-              List<String?> lastRead = snapshot.data!;
-              return LastReadCard(
-                title: lastRead[0] ?? "",
-                arabicTitle: lastRead[1] ?? "",
-                type: lastRead[2] ?? "",
-                verse: lastRead[3] != null ? "Ayat ${lastRead[3]}" : "",
-              );
-            },
-          ),
+                List<String?> lastRead = snapshot.data!;
+                return GestureDetector(
+                  onTap: () {
+                    if (lastRead[0] != null) {
+                      // Cari Surah berdasarkan nama
+                      var surahData = surahList.firstWhere(
+                        (surah) => surah['nama'].toLowerCase() == lastRead[0]!.toLowerCase(),
+                        orElse: () => null, // Jika tidak ditemukan, return null
+                      );
 
-            // LastReadCard(
-            //   title: lastRead[0] ?? "Belum ada bacaan terakhir",
-            //   arabicTitle: lastRead[1] ?? "",
-            //   type: lastRead[2] ?? "",
-            //   verse: lastRead[3] != null ? "Ayat ${lastRead[3]}" : "",
-            // ),
+                      if (surahData != null) {
+                        int nomorSurah = int.parse(surahData['nomor']);
+                        int nomorAyat = int.tryParse(lastRead[3]!) ?? 1;
+                        Navigator.pushNamed(
+                          context,
+                          '/surah',
+                          arguments: (nomorSurah),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Surah tidak ditemukan")),
+                        );
+                      }
+                    }
+                  },
+                  child: LastReadCard(
+                    title: lastRead[0] ?? "",
+                    arabicTitle: lastRead[1] ?? "",
+                    type: lastRead[2] ?? "",
+                    verse: lastRead[3] != null ? "Ayat ${lastRead[3]}" : "",
+                  ),
+                );
+              },
+            ),
 
             SizedBox(height: 16),
 
@@ -224,9 +282,15 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: searchResults.isNotEmpty ? searchResults.length : filteredSurahList.length,
+                itemCount:
+                    searchResults.isNotEmpty
+                        ? searchResults.length
+                        : filteredSurahList.length,
                 itemBuilder: (context, index) {
-                  var item = searchResults.isNotEmpty ? searchResults[index] : filteredSurahList[index];
+                  var item =
+                      searchResults.isNotEmpty
+                          ? searchResults[index]
+                          : filteredSurahList[index];
 
                   return GestureDetector(
                     onTap: () {
@@ -234,21 +298,25 @@ class _HomePageState extends State<HomePage> {
                         // Navigator.pushNamed(context, '/doa', arguments: item['id']);
                         showDoaBottomSheet(context, item);
                       } else {
-                        Navigator.pushNamed(context, '/surah', arguments: int.parse(item['nomor']))
-                      .then((_) => setState(() {})); // Refresh FutureBuilder setelah kembali;
+                        Navigator.pushNamed(
+                          context,
+                          '/surah',
+                          arguments: int.parse(item['nomor']),
+                        ).then(
+                          (_) => setState(() {}),
+                        ); // Refresh FutureBuilder setelah kembali;
                       }
                     },
-                    child: item.containsKey('doa')
-                        ? DoaItem(
-                            number: index + 1,
-                            title: item['doa'],
-                          )
-                        : SuraItem(
-                            number: index + 1,
-                            title: item['nama'],
-                            details: '${item['ayat']} Ayat | ${item['type']} | Surah ke-${int.parse(item['nomor'])}',
-                            arabicTitle: item['asma'],
-                          ),
+                    child:
+                        item.containsKey('doa')
+                            ? DoaItem(number: index + 1, title: item['doa'])
+                            : SuraItem(
+                              number: index + 1,
+                              title: item['nama'],
+                              details:
+                                  '${item['ayat']} Ayat | ${item['type']} | Surah ke-${int.parse(item['nomor'])}',
+                              arabicTitle: item['asma'],
+                            ),
                   );
                 },
               ),
@@ -260,16 +328,25 @@ class _HomePageState extends State<HomePage> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary), 
-            label: 'Home'
+            icon: Icon(
+              Icons.home,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Jadwal Adzan'
+            icon: Icon(
+              Icons.schedule,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            label: 'Jadwal Adzan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Settings'
+            icon: Icon(
+              Icons.settings,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            label: 'Settings',
           ),
         ],
         onTap: (index) {
@@ -281,11 +358,12 @@ class _HomePageState extends State<HomePage> {
               Navigator.pushNamed(context, '/jadwal');
               break;
             case 2:
-              Navigator.pushNamed(context, '/settings');
+              showSettingBottomSheet(context);
+              // Navigator.pushNamed(context, '/settings');
               break;
           }
         },
-      )
+      ),
     );
   }
 }

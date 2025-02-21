@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/surah_screen.dart';
 import 'screens/jadwal_screen.dart';
+import 'provider/settings_provider.dart';
 
+// void main() {
+//   runApp(const QuranApp());
+// }
 void main() {
-  runApp(const QuranApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SettingsProvider(),
+      child: QuranApp(),
+    ),
+  );
 }
 
 class QuranApp extends StatelessWidget {

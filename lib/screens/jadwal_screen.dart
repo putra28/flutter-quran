@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_quran/widget/JadwalCard_widget.dart';
 import 'package:flutter_quran/widget/JadwalItem_widget.dart';
+import 'package:flutter_quran/widget/Settings_widget.dart';
 import 'package:hijri/hijri_calendar.dart';
 
 class JadwalPage extends StatefulWidget {
@@ -125,6 +126,18 @@ class _JadwalPageState extends State<JadwalPage> {
     }
   }
 
+  void showSettingBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SettingsWidget();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +259,8 @@ class _JadwalPageState extends State<JadwalPage> {
               Navigator.pushNamed(context, '/jadwal');
               break;
             case 2:
-              Navigator.pushNamed(context, '/settings');
+              showSettingBottomSheet(context);
+              // Navigator.pushNamed(context, '/settings');
               break;
           }
         },

@@ -4,6 +4,8 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_quran/widget/BookmarkModal_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../provider/settings_provider.dart';
 
 class AyatItem extends StatelessWidget {
   final String title;
@@ -41,7 +43,7 @@ class AyatItem extends StatelessWidget {
       isScrollControlled: true,
       transitionAnimationController: AnimationController(
         vsync: Navigator.of(context),
-        duration: const Duration(milliseconds: 400), // Durasi transisi
+        duration: const Duration(milliseconds: 500), // Durasi transisi
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -72,6 +74,8 @@ class AyatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+    
     return GestureDetector(
       onTap: () => showDoaBottomSheet(context, number), // Tampilkan modal saat diklik
       child: Padding(
@@ -105,7 +109,7 @@ class AyatItem extends StatelessWidget {
                     arabicText,
                     textAlign: TextAlign.right,
                     style: GoogleFonts.scheherazadeNew(
-                      fontSize: 22,
+                      fontSize: settings.arabicFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -137,7 +141,7 @@ class AyatItem extends StatelessWidget {
           // ),
             Text(
               translation,
-              style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+              style: TextStyle(fontSize: settings.translationFontSize, color: Theme.of(context).colorScheme.secondary),
             ),
             Divider(color: Colors.grey.shade300),
           ],

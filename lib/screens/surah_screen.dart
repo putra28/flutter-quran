@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_quran/widget/SurahCard_widget.dart';
 import 'package:flutter_quran/widget/AyatItem_widget.dart';
+import 'package:flutter_quran/widget/Settings_widget.dart';
 
 class SurahPage extends StatefulWidget {
   const SurahPage({super.key});
@@ -12,9 +13,11 @@ class SurahPage extends StatefulWidget {
 }
 
 class _SurahPageState extends State<SurahPage> {
+  ScrollController _scrollController = ScrollController();
+  int? nomorAyat; // Menyimpan nomor ayat yang akan di-scroll
   Map<String, dynamic>? surahData;
   List<dynamic> ayatList = [];
-  int? surahNumber; // Menyimpan nomor surah yang diterima
+  int? surahNumber;
 
   @override
   void didChangeDependencies() {
@@ -46,6 +49,23 @@ class _SurahPageState extends State<SurahPage> {
     }
   }
 
+  void showSettingBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      transitionAnimationController: AnimationController(
+        vsync: Navigator.of(context),
+        duration: const Duration(milliseconds: 500), // Durasi transisi
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SettingsWidget();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +85,17 @@ class _SurahPageState extends State<SurahPage> {
             },
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.settings,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            onPressed: () {
+              showSettingBottomSheet(context);
+            },
+          ),
+        ],
         title: Text(
           surahData?['nama'] ?? 'Loading...',
           style: TextStyle(
