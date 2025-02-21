@@ -144,6 +144,17 @@ class _JadwalPageState extends State<JadwalPage> {
             },
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.explore,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/qiblah');
+            },
+          ),
+        ],
         title: Text(
           'Jadwal Sholat Hari Ini',
           style: TextStyle(
