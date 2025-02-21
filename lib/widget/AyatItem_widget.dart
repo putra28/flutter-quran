@@ -3,9 +3,12 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_quran/widget/BookmarkModal_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AyatItem extends StatelessWidget {
   final String title;
+  final String arabicTitle;
+  final String type;
   final int number;
   final String arabicText;
   final String translation;
@@ -23,10 +26,23 @@ class AyatItem extends StatelessWidget {
     // Ubah setiap digit angka menjadi angka Arab
     return number.toString().split('').map((digit) => arabicNumerals[int.parse(digit)]).join('');
   }
+
+  Future<void> saveLastRead(String surah, String arabicSurah, String type, int ayat) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastReadSurah', surah);
+    await prefs.setString('lastReadSurahArabic', arabicSurah);
+    await prefs.setString('lastReadSurahType', type);
+    await prefs.setInt('lastReadAyat', ayat);
+  }
+
   void showDoaBottomSheet(BuildContext context, int number) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      transitionAnimationController: AnimationController(
+        vsync: Navigator.of(context),
+        duration: const Duration(milliseconds: 400), // Durasi transisi
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -34,6 +50,10 @@ class AyatItem extends StatelessWidget {
         return BookmarkModalWidget(
           title: title,
           ayat: number.toString(),
+            onSave: () async {
+            await saveLastRead(title, arabicTitle, type, number);
+            Navigator.pop(context); // Tutup modal setelah menyimpan
+          },
         );
       },
     );
@@ -41,6 +61,8 @@ class AyatItem extends StatelessWidget {
 
   const AyatItem({
     required this.title,
+    required this.arabicTitle,
+    required this.type,
     required this.number,
     required this.arabicText,
     required this.translation,

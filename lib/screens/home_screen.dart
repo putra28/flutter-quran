@@ -6,6 +6,7 @@ import 'package:flutter_quran/widget/FilterBar_widget.dart';
 import 'package:flutter_quran/widget/SuraItem_widget.dart';
 import 'package:flutter_quran/widget/DoaItem_widget.dart';
 import 'package:flutter_quran/widget/DoaModal_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,12 +25,28 @@ class _HomePageState extends State<HomePage> {
   List surahList = [];
   List doaList = [];
   List filteredSurahList = [];
+  // List<String?> lastRead = [null, null, null, null];
 
   @override
   void initState() {
     super.initState();
     loadSurahData();
     loadDoaData();
+    // getLastRead().then((value) {
+    //   setState(() {
+    //     lastRead = value;
+    //   });
+    // });
+  }
+
+  Future<List<String?>> getLastRead() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    String? surah = prefs.getString('lastReadSurah');
+    String? surahArabic = prefs.getString('lastReadSurahArabic');
+    String? surahType = prefs.getString('lastReadSurahType');
+    int? ayat = prefs.getInt('lastReadAyat');
+    return [surah, surahArabic, surahType, ayat != null ? ayat.toString() : null];
   }
 
   void searchData(String query) {
@@ -163,8 +180,33 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 15),
+            
+            FutureBuilder<List<String?>>(
+            future: getLastRead(), // Setiap rebuild, ambil data terbaru dari SharedPreferences
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Loading indikator
+              }
+              if (!snapshot.hasData || snapshot.data![0] == null) {
+                return Text("Belum ada bacaan terakhir");
+              }
 
-            LastReadCard(title: 'Al-Baqarah', verse: 'Ayat 123', type: 'Madaniyah', arabicTitle: 'البقرة'),
+              List<String?> lastRead = snapshot.data!;
+              return LastReadCard(
+                title: lastRead[0] ?? "",
+                arabicTitle: lastRead[1] ?? "",
+                type: lastRead[2] ?? "",
+                verse: lastRead[3] != null ? "Ayat ${lastRead[3]}" : "",
+              );
+            },
+          ),
+
+            // LastReadCard(
+            //   title: lastRead[0] ?? "Belum ada bacaan terakhir",
+            //   arabicTitle: lastRead[1] ?? "",
+            //   type: lastRead[2] ?? "",
+            //   verse: lastRead[3] != null ? "Ayat ${lastRead[3]}" : "",
+            // ),
 
             SizedBox(height: 16),
 
@@ -192,7 +234,8 @@ class _HomePageState extends State<HomePage> {
                         // Navigator.pushNamed(context, '/doa', arguments: item['id']);
                         showDoaBottomSheet(context, item);
                       } else {
-                        Navigator.pushNamed(context, '/surah', arguments: int.parse(item['nomor']));
+                        Navigator.pushNamed(context, '/surah', arguments: int.parse(item['nomor']))
+                      .then((_) => setState(() {})); // Refresh FutureBuilder setelah kembali;
                       }
                     },
                     child: item.containsKey('doa')
@@ -221,10 +264,6 @@ class _HomePageState extends State<HomePage> {
             label: 'Home'
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.secondary), 
-            label: 'Bookmarks'
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.schedule, color: Theme.of(context).colorScheme.secondary), 
             label: 'Jadwal Adzan'
           ),
@@ -239,12 +278,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.pushNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushNamed(context, '/bookmarks');
-              break;
-            case 2:
               Navigator.pushNamed(context, '/jadwal');
               break;
-            case 3:
+            case 2:
               Navigator.pushNamed(context, '/settings');
               break;
           }

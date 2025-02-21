@@ -61,7 +61,7 @@ class _SurahPageState extends State<SurahPage> {
               color: Theme.of(context).colorScheme.primary,
             ),
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context, true); // Kirim nilai `true` saat kembali
             },
           ),
         ),
@@ -99,6 +99,8 @@ class _SurahPageState extends State<SurahPage> {
                     var ayat = ayatList[index - 1];
                     return AyatItem(
                       title: surahData?['nama'],
+                      arabicTitle: surahData?['asma'],
+                      type: surahData?['type'],
                       number: int.tryParse(ayat['nomor']) ?? 0,
                       arabicText: ayat['ar'],
                       translation: ayat['id'],

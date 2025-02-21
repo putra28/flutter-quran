@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BookmarkModalWidget extends StatelessWidget {
   final String title;
   final String ayat;
+  final VoidCallback onSave; // Tambahkan callback
   
   const BookmarkModalWidget({
     Key? key,
     required this.title,
     required this.ayat,
+    required this.onSave,
   }) : super(key: key);
 
   @override
@@ -36,7 +38,7 @@ class BookmarkModalWidget extends StatelessWidget {
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              "Simpan ke Bookmark?",
+              "Simpan ke Terakhir Baca?",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -57,8 +59,7 @@ class BookmarkModalWidget extends StatelessWidget {
               ),
               const SizedBox(width: 20), // Margin right
               ElevatedButton(
-                onPressed: () {
-                },
+                onPressed: onSave, // Panggil fungsi onSave untuk menyimpan last read
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),

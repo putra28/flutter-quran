@@ -224,13 +224,6 @@ class _JadwalPageState extends State<JadwalPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.bookmark,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            label: 'Bookmarks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
               Icons.schedule,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -250,12 +243,9 @@ class _JadwalPageState extends State<JadwalPage> {
               Navigator.pushNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushNamed(context, '/bookmarks');
-              break;
-            case 2:
               Navigator.pushNamed(context, '/jadwal');
               break;
-            case 3:
+            case 2:
               Navigator.pushNamed(context, '/settings');
               break;
           }
